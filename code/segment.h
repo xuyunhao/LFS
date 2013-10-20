@@ -15,8 +15,8 @@
 struct seg_block {
     int32_t block_id;
     int32_t inode_id;
-    int64_t offset;
-};
+    int32_t inode_v;
+};s
 
 struct segment {
 	int32_t inode_num;      // inode number of the file
@@ -26,7 +26,8 @@ struct segment {
     
     int64_t remaining_size; // initial to the maximum size
 
-    std::list<struct seg_block> block_list;
+    struct seg_block [] block_list;
+    struct segment* prev, next;
 };
 
 
