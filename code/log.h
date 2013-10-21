@@ -23,12 +23,12 @@ struct logAddress {
     int blk_num;
 };
 
-class log {
+class Log {
 public:
-    log();
-    ~log();
+    Log(struct mklfs_opts *opts);
+    ~Log();
 
-    bool open(Flash flash);
+    bool open(Flash *flash);
     bool close();
     
     bool Log_Read(struct logAddress * addr, int length, char* buffer);
@@ -42,18 +42,18 @@ public:
     
 private:
     struct logAddress* addr;
-    struct flash* flash;
+    Flash* flash;
     int sector_size;    // the sector size
     int blk_size;       // the num in sectors for a block
     int seg_size;       // the num in block for a segment
     int pre_seg_size;   // the num in block for pre-segment metedata
 
 // TODO
-//    struct Segment seg_cache;
+    Segment * seg_cache;
 //    struct Checkpoint cp_cache;
 //    struct Checkpoint cp_cur;
 //    struct Superblock sp;
-}
+};
 
 
 #endif /* defined(____log__) */
