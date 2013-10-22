@@ -18,10 +18,10 @@
 #include "mklfs.h"
 #include "segment.h"
 
-struct logAddress {
+typedef struct logAddress {
     int seg_num;
     int blk_num;
-};
+}logAddress;
 
 class Log {
 public:
@@ -35,6 +35,7 @@ public:
     bool Log_Write(int inum, int block, int length, char * buffer, struct logAddress &addr);
     bool Log_Free(struct logAddress * addr, int length);
 
+    logAddress * getLogAddress();
 // TODO
 //    Superblock * superblock();
 //    Checkpoint * Checkpoint();
@@ -54,6 +55,7 @@ private:
 //    struct Checkpoint cp_cur;
 //    struct Superblock sp;
 };
+inline logAddress * Log::getLogAddress() {return this->addr;}
 
 
 #endif /* defined(____log__) */

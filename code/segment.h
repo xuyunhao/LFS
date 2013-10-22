@@ -13,6 +13,9 @@
 #include "lld.h"
 #include <stdlib.h>
 #include <vector>
+
+#define NULL_BLOCK_INDEX -1
+
 /**
  This is the struct in the flash for
  other metadata in the pre-segment 
@@ -22,7 +25,7 @@ struct segment_metadata {
     int32_t seg_id;
 	int32_t inode_num;      // inode number of the file
 	int32_t logical_blk;	// logical block number of the file
-    
+    int32_t current_usage;  // the wearlimit usage
     time_t version;        // this can change to timestamp
     
     int64_t remaining_size; // initial to the maximum size
@@ -33,8 +36,8 @@ struct segment_metadata {
 
 class Segment {
 public:
-    Segment(Flash * flash, int seg_id, int start_sector_id, int pre_seg_size, int blk_per_seg, int sector_per_blk, Segment prev);
-    Segment(Flash *flash, int start_sector_id, int pre_seg_size, int blk_per_seg, int sector_per_blk);
+    Segment(Flash * flash, int seg_id, int start_sector_id, int pre_seg_size, int blk_per_seg, int sector_per_blk, int wearlimit, Segment prev);
+    Segment(Flash *flash, int start_sector_id, int pre_seg_size, int blk_per_seg, int sector_per_blk, int wearlimit);
     ~Segment();
     
     inline int get_seg_id();
@@ -49,6 +52,8 @@ public:
     bool set_new_blk(int inode_id, int inode_v, char * s);
     bool write_to_flash();
     bool read_from_flash();
+    
+    int block_reach_wearlimit();    // return the block id if it reaches the wearlimit, otherwise return NULL_BLOCK_INDEX.
 private:
     Flash * flash;
     int seg_id;
@@ -58,11 +63,14 @@ private:
     int next_free_blk_id;
     int blk_per_seg;
     
+    int wearlimit;          // the wearlimit for a segment
+    int current_usage;      // the current usage
+    
     int prev_seg_starting_sector;
     int next_seg_starting_sector;
     
 	int32_t logical_blk;	// logical block number of the file
-    time_t version;        // this can change to timestamp
+    time_t version;         // this can change to timestamp
     int64_t remaining_size; // number of remaining blk
                             // initial to the maximum size
     int64_t maximum_size;   // number of the maximum blk
