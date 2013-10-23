@@ -18,6 +18,8 @@ Log::Log(struct mklfs_opts *opts) {
     this->sector_size = FLASH_SECTOR_SIZE;
     this->blk_size = opts->blk_num;
     this->seg_size = opts->segment_num;
+    this->total_sector = opts->sector_num;
+
     int size = sizeof(struct segment_metadata) + this->seg_size*(sizeof(seg_block));
     int s_size = (size%this->sector_size)? size/this->sector_size+1: size/this->sector_size;
     this->pre_seg_size = (s_size%this->blk_size)? s_size/this->blk_size+1: s_size/this->blk_size;

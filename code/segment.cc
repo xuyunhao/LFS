@@ -134,8 +134,7 @@ Block * Segment::get_blk(int blk_id){
 
 bool Segment::set_new_blk(int inode_id, int inode_v, char * s) {
     if (this->next_free_blk_id > this->maximum_size) {
-        return FALSE
-        ;
+        return FALSE;
     }
     else{
         int id = this->next_free_blk_id - this->pre_seg_size;

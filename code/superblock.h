@@ -49,4 +49,7 @@ private:
     int wearlimit;
     int current_usage;
 };
+
+inline int SuperBlock::get_size() { return this->size;}
+
 #endif /* defined(____superblock__) */

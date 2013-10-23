@@ -36,6 +36,7 @@ public:
     bool Log_Free(struct logAddress * addr, int length);
 
     logAddress * getLogAddress();
+    int get_total_sectors();
 // TODO
 //    Superblock * superblock();
 //    Checkpoint * Checkpoint();
@@ -44,11 +45,11 @@ public:
 private:
     struct logAddress* addr;
     Flash* flash;
-    int sector_size;    // the sector size
+    int sector_size;    // the sector size in byte
     int blk_size;       // the num in sectors for a block
     int seg_size;       // the num in block for a segment
     int pre_seg_size;   // the num in block for pre-segment metedata
-
+    int total_sector;    // total
 // TODO
     Segment * seg_cache;
 //    struct Checkpoint cp_cache;
@@ -56,6 +57,6 @@ private:
 //    struct Superblock sp;
 };
 inline logAddress * Log::getLogAddress() {return this->addr;}
-
+inline int Log::get_total_sectors() {return this->total_sector;}
 
 #endif /* defined(____log__) */
