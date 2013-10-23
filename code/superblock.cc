@@ -54,7 +54,7 @@ CheckPoint * SuperBlock::get_most_recent_checkpoint() {
 }
 
 bool SuperBlock::create_new_checkpoint() {
-    CheckPoint * cp = new CheckPoint::CheckPoint(this->log);
+    CheckPoint * cp = new CheckPoint(this->log);
     int size = (this->cp_list).size();
     (this->cp_list).push_back(*cp);
     return cp != NULL && (this->cp_list).size()-size == 1;

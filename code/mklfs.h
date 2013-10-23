@@ -10,14 +10,15 @@
 #define ____mklfs__
 
 #include <iostream>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
 struct mklfs_opts {
-    uint32_t segment_num;
-    uint32_t sector_num;
+    u_int segment_num;
+    u_int sector_num;
     u_int blk_num;
     u_int wearlimit;
     char* filename;

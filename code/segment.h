@@ -36,8 +36,8 @@ struct segment_metadata {
 
 class Segment {
 public:
-    Segment(Flash * flash, int seg_id, int start_sector_id, int pre_seg_size, int blk_per_seg, int sector_per_blk, int wearlimit, Segment prev);
     Segment(Flash *flash, int start_sector_id, int pre_seg_size, int blk_per_seg, int sector_per_blk, int wearlimit);
+    Segment(Flash * flash, int seg_id, int start_sector_id, int pre_seg_size, int blk_per_seg, int sector_per_blk, int wearlimit, Segment prev);
     ~Segment();
     
     inline int get_seg_id();
