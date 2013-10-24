@@ -9,9 +9,12 @@
 #include "block.h"
 #include "flash.h"
 #include <string.h>
+#include <cstring>
 #include <stdlib.h>
 
-Block::Block(Flash * flash, int start_sector_id, int sector_size, int blk_id, int wearlimit, int current_usage) {
+#include <iostream>
+
+Block::Block(Flash flash, int start_sector_id, int sector_size, int blk_id, int wearlimit, int current_usage) {
     this->flash = flash;
     this->sector_offset = start_sector_id;
     this->sector_size = sector_size;
@@ -33,7 +36,8 @@ Block::~Block() {
 bool Block::set_content(char * s, int inode_id, int inode_v) {
     this->inode_id = inode_id;
     this->inode_v = inode_v;
-    memcpy(this->content, s, strlen(s));
+    this->content = (char *) malloc(strlen(s));
+    strcpy(this->content, s);
     
     return (this->content != NULL);
 }
@@ -44,9 +48,12 @@ bool Block::read_block(char * metadata, char * block_contents, int pre_seg_size)
     this->inode_id = sb->inode_id;
     this->inode_v = sb->inode_v;
     this->current_usage = sb->current_usage;
-    
+
     int len = this->sector_size * FLASH_SECTOR_SIZE;
     int offset = len * (this->blk_id - pre_seg_size);
+
+    this->content = (char *) malloc(len);
+    
     memcpy(this->content, block_contents, len);
     
     return (this->content != NULL);

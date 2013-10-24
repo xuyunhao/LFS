@@ -11,22 +11,11 @@
 
 #include "flash.h"
 #include <stdlib.h>
-
-#define NULL_INODE -1
-/**
- This is the struct in the flash for
- segment summary table
- **/
-typedef struct seg_block {
-    int block_id;
-    int inode_id;
-    int inode_v;
-    int current_usage;
-} seg_block;
+#include "lld.h"
 
 class Block {
 public:
-    Block(Flash * flash, int start_sector_id, int sector_size, int blk_id, int wearlimit, int current_usage);
+    Block(Flash flash, int start_sector_id, int sector_size, int blk_id, int wearlimit, int current_usage);
     ~Block();
     
     int get_block_id();
@@ -44,7 +33,7 @@ public:
     bool read_block(char * metadata, char * block_contents, int pre_seg_size);
     char * to_string();
 private:
-    Flash * flash;
+    Flash flash;
     int blk_id;
     int inode_id;
     int inode_v;

@@ -20,7 +20,7 @@ SuperBlock::SuperBlock(Flash * flash, Log * log) {
 //    this->current_usage = 1;
 //    this->size = 1;
 }
-SuperBlock::SuperBlock(Flash * flash, Log * log, int sector_size, int sector_per_blk, int blk_per_seg, int wearlimit) {
+SuperBlock::SuperBlock(Flash * flash, Log * log, int sector_size, int sector_per_blk, int blk_per_seg, int total_sector, int wearlimit) {
     this->log = log;
     this->flash = flash;
     this->sector_size = sector_size;
@@ -28,6 +28,7 @@ SuperBlock::SuperBlock(Flash * flash, Log * log, int sector_size, int sector_per
     this->blk_per_seg = blk_per_seg;
     this->wearlimit = wearlimit;
     this->current_usage = 1;
+    this->total_num_seg = total_sector/(this->sector_per_blk * this->blk_per_seg);
     
     // estimate the size of a superblock
     int size_of_segment =sector_size * this->sector_per_blk * this->blk_per_seg;
@@ -50,7 +51,7 @@ SuperBlock::SuperBlock(Flash * flash, Log * log, int sector_size, int sector_per
 }
 
 CheckPoint * SuperBlock::get_most_recent_checkpoint() {
-    return (this->cp_list).back();
+    return &((this->cp_list).back());
 }
 
 bool SuperBlock::create_new_checkpoint() {
@@ -63,29 +64,51 @@ bool SuperBlock::create_new_checkpoint() {
 bool SuperBlock::write_to_flash() {
     int cp_len = this->cp_list.size();
     int seg_size_byte = sector_size * this->sector_per_blk * this->blk_per_seg;
-    char * str = (char *) malloc(sizeof(seg_size_byte) + )
+    char * str = (char *) malloc(seg_size_byte);
+    char * cp = str + sizeof(superblock);
     
-    char * cp = (char *) str + sizeof(superblock);
     int remaining_byte = seg_size_byte - sizeof(superblock);
+    int seg_id = 0;
+
+    // write default metadata to flash
+    superblock * sp = (superblock *) str;
+    sp->sector_size = this->sector_size;
+    sp->sector_per_blk = this->sector_per_blk;
+    sp->blk_per_seg = this->blk_per_seg;
+    sp->wearlimit = this->wearlimit;
+    sp->current_usage = this->current_usage;
+    sp->num_seg_sp = this->size;
+    sp->total_num_seg = this->total_num_seg;
     
-    typedef std::vector<CheckPoint>::iterator cp_type;
-    for(cp_type iterator = this->cp_list.begin();
+    for(cp_list_itr iterator = this->cp_list.begin();
         iterator != this->cp_list.end();
         iterator++)
     {
         char * cp_str = iterator->to_string();
         int l = strlen(cp_str);
-        if (remaining_byte > cp_str) {
+        if (remaining_byte > l) {
             memcpy(cp, cp_str, l);
             cp += l;
             remaining_byte -= l;
         }
         else {
+            // write current cp to flash
+            int sector_id = seg_id * this->sector_per_blk * this->blk_per_seg;
+            if(!Flash_Write(this->flash, sector_id,
+                            this->sector_per_blk * this->blk_per_seg, str)) {
+                return false;
+            }
             // get a new segment
-            // then write content to new segment
+            seg_id++;
+            // then prepare content in new segment
+            str = (char *) malloc(seg_size_byte);
+            cp = str;
+            memcpy(cp, cp_str, l);
+            remaining_byte = seg_size_byte - l;
+            cp += l;
         }
-        cp += strlen(iterator->to)
-        
     }
-
+    int sector_id = seg_id * this->sector_per_blk * this->blk_per_seg;
+    return Flash_Write(this->flash, sector_id,
+                this->sector_per_blk * this->blk_per_seg, str);
 }

@@ -11,21 +11,17 @@
 
 #include <iostream>
 #include <vector>
+#include "lld.h"
+#include "log.h"
+#include "checkpoint.h"
 
-typedef struct superblock {
-    int sector_size;
-    int sector_per_blk;
-    int blk_per_seg;
-    int wearlimit;
-    int current_usage;
-    int num_seg_sp;
-    int total_num_seg;
-}superblock;
+typedef std::vector<CheckPoint> cp_list_type;
+typedef std::vector<CheckPoint>::iterator cp_list_itr;
 
 class SuperBlock {
 public:
     SuperBlock(Flash * flash, Log * log);
-    SuperBlock(Flash * flash, Log * log, int sector_size, int sector_per_blk, int blk_per_seg, int wearlimit);
+    SuperBlock(Flash * flash, Log * log, int sector_size, int sector_per_blk, int blk_per_seg, int total_sector, int wearlimit);
     ~SuperBlock();
     
     CheckPoint * get_most_recent_checkpoint();
@@ -36,7 +32,7 @@ public:
     
     int get_size();
 private:
-    std::vector<CheckPoint> cp_list;
+    cp_list_type cp_list;
     
     Log * log;
     Flash * flash;
@@ -46,6 +42,8 @@ private:
     int sector_per_blk;
     int blk_per_seg;
   
+    int total_num_seg;
+    
     int wearlimit;
     int current_usage;
 };

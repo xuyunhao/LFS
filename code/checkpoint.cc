@@ -7,7 +7,7 @@
 //
 
 #include "checkpoint.h"
-#include <cstdlib>
+//#include <cstdlib>
 
 //CheckPoint::CheckPoint(Flash * flash, Log * log, Ifile * ifile) {
 CheckPoint::CheckPoint(Log * log) {
@@ -25,9 +25,11 @@ CheckPoint::CheckPoint(Log * log) {
 
 }
 
+CheckPoint::~CheckPoint() {}
+
 char *  CheckPoint::to_string() {
     char * str = (char *) malloc(sizeof(checkpoint));
-    checkpoint cp = (checkpoint *) str;
+    checkpoint * cp = (checkpoint *) str;
     cp->version = this->version;
     cp->tail_seg_id = this->tail_seg_id;
     cp->tail_blk_id = this->tail_blk_id;

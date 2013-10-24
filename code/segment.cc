@@ -13,8 +13,18 @@
 #include <string.h>
 #include <vector>
 
+#include <iostream>
 
-Segment::Segment(Flash *flash, int start_sector_id, int pre_seg_size, int blk_per_seg, int sector_per_blk, int wearlimit) {
+void print_t(char * s) {
+    segment_metadata * sm = (segment_metadata *)s;
+    std::cout << "seg id: " << sm->seg_id << "\n";
+    std::cout << "inode id: " << sm->inode_num << "\n";
+    std::cout << "remain size: " << sm->remaining_size << "\n";
+    std::cout << "version: " << sm->version << "\n";
+    std::cout << "prev id: " << sm->prev_start_sector << "\n";
+    std::cout << "next id: " << sm->next_start_sector << std::endl;
+}
+Segment::Segment(Flash flash, int start_sector_id, int pre_seg_size, int blk_per_seg, int sector_per_blk, int wearlimit) {
     this->flash = flash;
     this->sector_offset = start_sector_id;
     this->pre_seg_size = pre_seg_size;
@@ -35,6 +45,7 @@ Segment::Segment(Flash *flash, int start_sector_id, int pre_seg_size, int blk_pe
     if (!Flash_Read(this->flash, this->sector_offset, count, seg_content)) {
         // print error message
     }
+    
     this->seg_id = ((struct segment_metadata *) seg_content)->seg_id;
     this->version = ((struct segment_metadata *) seg_content)->version;
     this->remaining_size = ((struct segment_metadata *) seg_content)->remaining_size;
@@ -45,29 +56,45 @@ Segment::Segment(Flash *flash, int start_sector_id, int pre_seg_size, int blk_pe
     
     int blk_in_used = this->blk_per_seg - this->remaining_size - this->pre_seg_size;
     this->next_free_blk_id = pre_seg_size + blk_in_used;
-    
+
+    print_t(seg_content);
+    std::cout << this->seg_id << std::endl;
+
+    std::cout << blk_in_used << " "<< this->blk_per_seg;
+    std::cout << " " << this->remaining_size << " ";
+    std::cout << this->pre_seg_size << std::endl;
     // read the block list
     // the metadata for the block list in the content
     char * blk_list_metadata = seg_content + sizeof(struct segment_metadata);
     // the content in segment (exclude the pre-segment)
     char * block_contents = seg_content + pre_seg_size_byte;
     int i = 0;
+    std::cout << "111" << std::endl;
     // read data content for blocks that has been used
     for (; i < blk_in_used; i++) {
         int start = start_sector_id + (pre_seg_size+i) * sector_per_blk;
+        std::cout << "333" << std::endl;
         Block * blk = new Block(this->flash, start, sector_per_blk, i+pre_seg_size, wearlimit, this->current_usage);
+        std::cout << "444" << std::endl;
         blk->read_block(blk_list_metadata, block_contents, this->pre_seg_size);
+        std::cout << "555" << std::endl;
         (this->blk_list).push_back(*blk);
     }
+    std::cout << "222" << std::endl;
     // Initial the blocks that has not been used
     for (; i < this->maximum_size; i++) {
         int start = start_sector_id + (pre_seg_size+i) * sector_per_blk;
+        std::cout << "333" << std::endl;
         Block * blk =new Block(this->flash, start, sector_per_blk, i+pre_seg_size, wearlimit, this->current_usage);
+        std::cout << "444" << std::endl;
+        std::cout << blk << " " << (blk == NULL)<< std::endl;
         (this->blk_list).push_back(*blk);
+        std::cout << "555 "<< (this->blk_list).size() << std::endl;
     }
+    std::cout << "333" << std::endl;
 }
 
-Segment::Segment(Flash * flash, int seg_id, int start_sector_id, int pre_seg_size, int blk_per_seg, int sector_per_blk, int wearlimit, Segment prev) {
+Segment::Segment(Flash flash, int seg_id, int start_sector_id, int pre_seg_size, int blk_per_seg, int sector_per_blk, int wearlimit, Segment * prev) {
     this->flash = flash;
     this->seg_id = seg_id;
     this->sector_offset = start_sector_id;
@@ -82,16 +109,25 @@ Segment::Segment(Flash * flash, int seg_id, int start_sector_id, int pre_seg_siz
     this->wearlimit = wearlimit;
     this->current_usage = 1;
     
-    this->prev_seg_starting_sector = prev.get_start_sector();
+    if (prev != NULL) {
+        this->prev_seg_starting_sector = prev->get_start_sector();
+    }
+    else {
+        this->prev_seg_starting_sector = NULL_BLOCK_INDEX;
+    }
     this->next_seg_starting_sector = start_sector_id + blk_per_seg * sector_per_blk;
 
     for (int i = 0; i < blk_per_seg; i++) {
         int start = start_sector_id + (pre_seg_size+i) * sector_per_blk;
+        std::cout << "333" << std::endl;
         Block * blk = new Block(this->flash, start, sector_per_blk, i+pre_seg_size, wearlimit, this->current_usage);
         (this->blk_list).push_back(*blk);
     }
 }
 
+Segment::~Segment() {
+    (this->blk_list).clear();
+}
 Segment * Segment::get_prev() {
     // check if the prev is not the superblock
     if (this->remaining_size >= this->maximum_size) {
@@ -139,6 +175,8 @@ bool Segment::set_new_blk(int inode_id, int inode_v, char * s) {
     }
     else{
         int id = this->next_free_blk_id - this->pre_seg_size;
+        Block * blk =new Block(this->flash, this->next_seg_starting_sector, this->sector_per_blk, id, this->wearlimit, this->current_usage);
+        (this->blk_list)[id] = *blk;
         --(this->remaining_size);
         ++(this->next_free_blk_id);
         return ((this->blk_list)[id]).set_content(s, inode_id, inode_v);
@@ -149,6 +187,7 @@ bool Segment::set_new_blk(int inode_id, int inode_v, char * s) {
 bool Segment::write_to_flash() {
     int len = sizeof(struct segment_metadata) + this->blk_per_seg * sizeof(seg_block);
     char * seg_metadata = (char *) malloc(len);
+    memset (seg_metadata,0,len);
     ((struct segment_metadata *) seg_metadata)->seg_id = this->seg_id;
     ((struct segment_metadata *) seg_metadata)->version = this->version;
     ((struct segment_metadata *) seg_metadata)->current_usage = this->current_usage;
@@ -164,6 +203,8 @@ bool Segment::write_to_flash() {
         memcpy(blk_list, element, sizeof(seg_block));
         blk_list += sizeof(seg_block);
     }
+    std::cout << this->sector_offset << std::endl;
+    print_t(seg_metadata);
     return Flash_Write(this->flash, this->sector_offset, this->pre_seg_size, seg_metadata);
 }
 
@@ -175,3 +216,4 @@ int Segment::block_reach_wearlimit() {
     }
     return NULL_BLOCK_INDEX;
 }
+

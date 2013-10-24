@@ -15,13 +15,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
-struct mklfs_opts {
-    u_int segment_num;
-    u_int sector_num;
-    u_int blk_num;
-    u_int wearlimit;
-    char* filename;
-};
+#include "lld.h"
 
 #endif /* defined(____mklfs__) */

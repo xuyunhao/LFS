@@ -17,11 +17,7 @@
 #include "flash.h"
 #include "mklfs.h"
 #include "segment.h"
-
-typedef struct logAddress {
-    int seg_num;
-    int blk_num;
-}logAddress;
+#include "lld.h"
 
 class Log {
 public:

@@ -1,6 +1,6 @@
 //
 //  mklfs.cc
-//  
+//
 //
 //  Created by Dennis Xu on 10/18/13.
 //
@@ -40,7 +40,7 @@ bool mklfs_getop(int argc, char** argv, struct mklfs_opts* opts){
     if (optind < argc) {
         opts->filename = argv[optind];
     }
-    if (opts->segment_num == 0) opts->segment_num = 32768;
+    if (opts->segment_num == 0) opts->segment_num = 32;
     if (opts->sector_num == 0) opts->sector_num = 1024;
     if (opts->blk_num == 0) opts->blk_num = 2;
     if (opts->wearlimit == 0) opts->wearlimit = 1000;
@@ -67,6 +67,8 @@ int main(int argc, char** argv) {
     // Create log
     
     // Create flash
-    Flash_Create(opts.filename, opts.wearlimit, opts.blk_num);
-    
+    //give disk file name,
+    //erase block wear limit,
+    //and how many erase blocks the flash should have--which is total sectors/sectors per block
+    Flash_Create(opts.filename, opts.wearlimit, (opts.sector_num/FLASH_SECTORS_PER_BLOCK));
 }

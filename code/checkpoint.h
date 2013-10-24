@@ -13,15 +13,7 @@
 #include <ctime>
 #include <vector>
 #include "log.h"
-
-typedef struct checkpoint {
-    time_t  version;
-    int     tail_seg_id;
-    int     tail_blk_id;
-    
-    int     ifile_inode_seg_id;
-    int     ifile_inode_blk_id;
-} checkpoint;
+#include "lld.h"
 
 class CheckPoint {
 public:
