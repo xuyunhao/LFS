@@ -15,13 +15,13 @@
 #include "log.h"
 #include "checkpoint.h"
 
-typedef std::vector<CheckPoint> cp_list_type;
-typedef std::vector<CheckPoint>::iterator cp_list_itr;
+typedef std::vector<CheckPoint*> cp_list_type;
+typedef std::vector<CheckPoint*>::iterator cp_list_itr;
 
 class SuperBlock {
 public:
-    SuperBlock(Flash * flash, Log * log);
-    SuperBlock(Flash * flash, Log * log, int sector_size, int sector_per_blk, int blk_per_seg, int total_sector, int wearlimit);
+    SuperBlock(Flash flash, Log * log);
+    SuperBlock(Flash flash, Log * log, int sector_size, int sector_per_blk, int blk_per_seg, int total_sector, int wearlimit);
     ~SuperBlock();
     
     CheckPoint * get_most_recent_checkpoint();
@@ -35,7 +35,8 @@ private:
     cp_list_type cp_list;
     
     Log * log;
-    Flash * flash;
+    Flash flash;
+    Ifile * ifile;
     int size;       // number of segments for superblock
                     // compute in the constructor
     int sector_size;

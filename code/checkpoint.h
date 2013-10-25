@@ -14,6 +14,13 @@
 #include <vector>
 #include "log.h"
 #include "lld.h"
+#include "ifile.h"
+
+typedef std::map<int, time_t> inode_v_map;
+typedef std::map<int, time_t>::iterator inode_v_map_itr;
+
+typedef std::map<int, bool> seg_u_map;
+typedef std::map<int, bool>::iterator seg_u_map_itr;
 
 class CheckPoint {
 public:
@@ -40,8 +47,8 @@ private:
 
     
     // TODO
-//    std::map<int, time_t> inode_version_table;
-//    std::map<int, bool> seg_usage_table;
+    inode_v_map inode_vt;
+    seg_u_map seg_ut;
 };
 
 inline int CheckPoint::get_tail_seg_id() { return this->tail_seg_id;}

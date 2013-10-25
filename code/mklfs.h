@@ -16,5 +16,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "lld.h"
+#include "log.h"
+#include "flash.h"
 
 #endif /* defined(____mklfs__) */

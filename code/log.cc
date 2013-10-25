@@ -10,6 +10,20 @@
 #include <vector>
 #include <assert.h>
 
+Log::Log() {
+    this->addr = NULL;
+    //    this->cp_cur = NULL;
+    //    this->cp_cache = NULL;
+    //    this->sp = NULL;
+    this->sector_size = FLASH_SECTOR_SIZE;
+    this->blk_size = 2;
+    this->seg_size = 32;
+    this->total_sector = 1024;
+    
+    int size = sizeof(struct segment_metadata) + this->seg_size*(sizeof(seg_block));
+    int s_size = (size%this->sector_size)? size/this->sector_size+1: size/this->sector_size;
+    this->pre_seg_size = (s_size%this->blk_size)? s_size/this->blk_size+1:s_size/this->blk_size;
+}
 Log::Log(struct mklfs_opts *opts) {
     this->addr = NULL;
 //    this->cp_cur = NULL;
@@ -24,8 +38,9 @@ Log::Log(struct mklfs_opts *opts) {
     int s_size = (size%this->sector_size)? size/this->sector_size+1: size/this->sector_size;
     this->pre_seg_size = (s_size%this->blk_size)? s_size/this->blk_size+1:s_size/this->blk_size;
 }
+Log::~Log(){}
 
-bool Log::open(Flash * flash) {
+bool Log::open(Flash flash) {
     assert(flash != NULL);
     this->flash = flash;
     //TODO
@@ -91,6 +106,31 @@ bool Log::Log_Write(int inum, int block, int length, char * buffer, struct logAd
     }
     
     return Flash_Write(this->flash, sector, count, buffer);
+}
+bool Log::Log_Ifile_Write(int length, char * buffer, logAddress & addr) {
+    u_int sector = this->addr->seg_num* (this->seg_size*this->blk_size)
+    + this->addr->blk_num * (this->blk_size);
+    u_int count = (length%this->sector_size)?length/this->sector_size+1:length/this->sector_size;
+    // Update the addr for the new file
+    addr.seg_num = this->addr->seg_num;
+    addr.blk_num = this->addr->blk_num;
+    
+    //TODO
+    // update segment summary table in per-segment metadata
+    
+    // Update the next segment/block info in log
+    this->addr->blk_num++;
+    if (this->addr->blk_num >= this->seg_size) {
+        this->addr->seg_num++;
+        // craate new segment
+        //u_int new_segment_sector = this->addr->seg_num* (this->seg_size*this->blk_size);
+        //Segment * seg = segment_init(this->flash, this->seg_num, new_segment_sector, this->pre_seg_size);
+        //update next
+        this->addr->blk_num = this->pre_seg_size;
+    }
+    
+    return Flash_Write(this->flash, sector, count, buffer);
+    
 }
 
 //bool Log_Write(inode inode, int block, int length, char * buffer, struct logAddress &addr) {

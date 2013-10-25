@@ -16,9 +16,9 @@
 
 #include "lld.h"
 
-typedef std::map<int, logAddress> addr_map;
-typedef std::map<int, logAddress>::iterator addr_map_itr;
-typedef std::vector<logAddress> addr_list;
+typedef std::map<int, logAddress*> addr_map;
+typedef std::map<int, logAddress*>::iterator addr_map_itr;
+typedef std::vector<logAddress*> addr_list;
 
 class Inode{
 public:
@@ -31,6 +31,7 @@ public:
     time_t get_version();
     addr_list get_blk_list();
     bool update(int offset, logAddress * addr);
+    char * to_string();
 private:
     Flash flash;
     int node_id;

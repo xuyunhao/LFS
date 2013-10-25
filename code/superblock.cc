@@ -9,7 +9,7 @@
 #include "superblock.h"
 #include <cstring>
 
-SuperBlock::SuperBlock(Flash * flash, Log * log) {
+SuperBlock::SuperBlock(Flash flash, Log * log) {
     this->log = log;
     this->flash = flash;
     // Read from flash
@@ -20,7 +20,7 @@ SuperBlock::SuperBlock(Flash * flash, Log * log) {
 //    this->current_usage = 1;
 //    this->size = 1;
 }
-SuperBlock::SuperBlock(Flash * flash, Log * log, int sector_size, int sector_per_blk, int blk_per_seg, int total_sector, int wearlimit) {
+SuperBlock::SuperBlock(Flash flash, Log * log, int sector_size, int sector_per_blk, int blk_per_seg, int total_sector, int wearlimit) {
     this->log = log;
     this->flash = flash;
     this->sector_size = sector_size;
@@ -50,14 +50,16 @@ SuperBlock::SuperBlock(Flash * flash, Log * log, int sector_size, int sector_per
     }
 }
 
+SuperBlock::~SuperBlock() {}
+
 CheckPoint * SuperBlock::get_most_recent_checkpoint() {
-    return &((this->cp_list).back());
+    return (this->cp_list).back();
 }
 
 bool SuperBlock::create_new_checkpoint() {
     CheckPoint * cp = new CheckPoint(this->log);
     int size = (this->cp_list).size();
-    (this->cp_list).push_back(*cp);
+    (this->cp_list).push_back(cp);
     return cp != NULL && (this->cp_list).size()-size == 1;
 }
 
@@ -84,7 +86,7 @@ bool SuperBlock::write_to_flash() {
         iterator != this->cp_list.end();
         iterator++)
     {
-        char * cp_str = iterator->to_string();
+        char * cp_str = (*iterator)->to_string();
         int l = strlen(cp_str);
         if (remaining_byte > l) {
             memcpy(cp, cp_str, l);

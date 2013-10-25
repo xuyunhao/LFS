@@ -9,7 +9,8 @@
 #include "mklfs.h"
 #include "flash.h"
 #include <getopt.h>
-
+#include "superblock.h"
+#include "checkpoint.h"
 
 bool mklfs_getop(int argc, char** argv, struct mklfs_opts* opts){
     while (1) {
@@ -63,12 +64,19 @@ int main(int argc, char** argv) {
         std::cout << "\t\t Wear limit for erase blocks. The default is 1000.\n"<<std::endl;
     }
     
-    // TODO
-    // Create log
-    
     // Create flash
     //give disk file name,
     //erase block wear limit,
     //and how many erase blocks the flash should have--which is total sectors/sectors per block
-    Flash_Create(opts.filename, opts.wearlimit, (opts.sector_num/FLASH_SECTORS_PER_BLOCK));
+    Flash_Create(opts.filename, opts.wearlimit, opts.sector_num/opts.blk_num);
+    u_int size;
+    Flash flash = Flash_Open(opts.filename, FLASH_SILENT, &size);
+    // TODO
+    // Create log
+    Log log (&opts);
+    log.open(flash);
+    SuperBlock sb(flash, &log);
+    
+    CheckPoint * cp = sb.get_most_recent_checkpoint();
+    Flash_Close(flash);
 }

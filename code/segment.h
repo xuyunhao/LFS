@@ -54,7 +54,7 @@ private:
     int64_t remaining_size; // number of remaining blk
                             // initial to the maximum size
     int64_t maximum_size;   // number of the maximum blk
-    std::vector<Block> blk_list;
+    std::vector<Block*> blk_list;
 };
 
 inline int Segment::get_seg_id() { return this->seg_id;}

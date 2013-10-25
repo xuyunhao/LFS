@@ -19,7 +19,7 @@
 
 #include "flash.h"
 
-#define MAX_DB	500             // Maximum number of blocks a file  can occupy
+#define MAX_BLOCK_PER_FILE 4    // Maximum number of blocks a file  can occupy
 #define MAX_FILE_NAME_SIZE 8    // Maximum number of characters for a file name
 #define MAXIMUM_BLOCK_NUM 1024  // Maximum number of blocks a segment can contain
 
@@ -27,23 +27,40 @@
 
 #define NULL_BLOCK_INDEX -1
 
-
+#define SEGNUM_INVALID -1
 /**
  Struct for opts used in mklfs
  **/
 struct mklfs_opts {
-    uint32_t segment_num;
-    uint32_t sector_num;
-    uint32_t blk_num;
+    u_int segment_num;
+    u_int sector_num;
+    u_int blk_num;
     uint32_t wearlimit;
     char* filename;
 };
 
+/**
+ Struct for opts used in lfs
+ **/
+struct lfs_cmdopts {
+    int nseg_cache;
+    int checkpoint_interval;
+    int cleaning_start;
+    int cleaning_stop;
+    char* filename;
+    char* mountpoint;
+};
+
+/**
+ Struct for opts used in lfsck
+ **/
+struct lfsck_cmdopts {
+    char* filename;
+};
 
 /**
  Struct for Inode
  **/
-
 typedef struct direct_block {
 	uint32_t seg_num;
 	uint32_t blk_num;
@@ -57,8 +74,8 @@ typedef struct indirct_block {
 typedef struct inode {
 	uint32_t inode_id;	// inode number
 	uint32_t size;
+    time_t   version;
     char name[MAX_FILE_NAME_SIZE];   // remove for phase 2
-	direct_block direct[MAX_DB];
 }inode;
 
 /**
@@ -113,7 +130,15 @@ typedef struct logAddress {
     uint32_t blk_num;
 }logAddress;
 
+typedef struct inode_version_table {
+    uint32_t inode_id;
+    time_t   inode_v;
+}inode_version_table;
 
+typedef struct seg_usage_table {
+    uint32_t seg_id;
+    uint32_t is_used;
+}seg_usage_table;
 
 
 #endif /* defined(____lld__) */
