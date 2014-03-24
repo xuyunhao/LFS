@@ -1,1 +1,0 @@
-In this project, we are going to implement a log-structured file system (LFS) that allows applications to access files and directories stored in a log. The functionality is similar to that described in the LFS paper, although I've simplified it somewhat. The LFS will be implemented on flash memory.
